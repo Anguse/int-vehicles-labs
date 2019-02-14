@@ -1,0 +1,18 @@
+
+PART1:
+correlated error, find out using autocorrelation in matlab.
+The errors have correlation, this can be observed in the autocorrelation plot when zoomed in at the shifting point. 
+The error have a correlation in the nearest samples around this area. If it did not, the unshifted error would be just a spike with no correlation in the adjacent samples (Shown in plot as red).
+That is, the wider peak of the error shows that there is a correlation between errors in the antecedent and subsequential samples.
+
+PART2:
+X1: 803525.650791667
+Y1: 6309304.47301000
+
+Since the formula for calculating the speed is s = ((p1+e1)-(p2+e2)/t). The difference between the errors will be very small because of correlation and will therefore almost cancel eachother out.
+In comparison to position p = (x+ex, y+ey)
+
+var1 = 306
+var2 = 2.664
+
+

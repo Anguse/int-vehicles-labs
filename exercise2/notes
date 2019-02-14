@@ -1,0 +1,22 @@
+4)
+State uncertainty becomes greater and greater. This is expected since we don't have anything to refer to other than odometry and dead reckoning.
+
+Axya = [1, 0, -dD*sin(A2(kk-1)+dA/2);            % Jacobian matrix w.r.t. X, Y and A [3x3]
+            0, 1, dD*cos(A2(kk-1)+dA/2);
+            0, 0, 1];     
+    Au =   [cos(A2(kk-1)+dA/2), -dD/2*sin(A2(kk-1)+dA/2); % Jacobian matrix w.r.t. dD and dA [3x2]
+            sin(A2(kk-1)+dA/2), (dD/2)*cos(A2(kk-1)+dA/2);
+            0, 1];           
+    Arl = [1/2*cos(A2(kk)+dA/2)-dD/(2*WHEEL_BASE)*sin(A2(kk)+dA/2),1/2*cos(A2(kk)+dA/2)+dD/(2*WHEEL_BASE)*sin(A2(kk)+dA/2); % Jacobian matrix w.r.t. dDl and dDr
+          1/2*cos(A2(kk)+dA/2)+dD/(2*WHEEL_BASE)*sin(A2(kk)+dA/2),1/2*cos(A2(kk)+dA/2)-dD/(2*WHEEL_BASE)*sin(A2(kk)+dA/2);
+          1/WHEEL_BASE, -1/WHEEL_BASE];
+      
+    Ab = [(dDr+dDl)/2*(dDr-dDl)/(2*WHEEL_BASE^2)*sin(A2(kk-1)+(dDr-dDl)/(2*WHEEL_BASE));
+        -(dDr+dDl)/2*(dDr-dDl)/(2*WHEEL_BASE^2)*cos(A2(kk-1)+(dDr-dDl)/(2*WHEEL_BASE));
+        -(dDr-dDl)/WHEEL_BASE^2];
+      
+    % Use the law of error predictions, which gives the new uncertainty
+    Cxya_new = Axya*Cxya_old*Axya' + Au*Cu*Au' + Arl*Crl*Arl' + Ab*Cb*Ab';
+    
+    % Store the new co-variance matrix
+    P2(kk,1:9) = [Cxya_new(1,1:3) Cxya_new(2,1:3) Cxya_new(3,1:3)];
