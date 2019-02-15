@@ -7,8 +7,8 @@
 clear all; close all;
 
 % %%% Khepera settings 1
-WHEEL_BASE = 53+13;                % [mm]
-WHEEL_DIAMETER = 15.3+1.3;          % [mm]
+WHEEL_BASE = 53;                % [mm]
+WHEEL_DIAMETER = 15.3;          % [mm]
 WHEEL_CIRCUMFERENCE = pi*WHEEL_DIAMETER;    % [mm]
 PULSES_PER_REVOLUTION = 600;
 MM_PER_PULSE = WHEEL_CIRCUMFERENCE/PULSES_PER_REVOLUTION; % [mm / pulse]
@@ -101,8 +101,8 @@ SIGMA_WHEEL_ENCODER = 0.5/12;   % The error in the encoder is 0.5mm / 12mm trave
 SIGMA_WHEEL_BASE = 13; % The error in wheelbase is 13mm
 
 % Use the same uncertainty in both of the wheel encoders
-kl = 1.3*pi/WHEEL_CIRCUMFERENCE   % The error on each wheel is 1.3mm
-kr = 1.3*pi/WHEEL_CIRCUMFERENCE
+kl = 0.001   % The error on each wheel
+kr = 0.001
 kb = SIGMA_WHEEL_BASE;
 
 % Load encoder values
@@ -122,17 +122,14 @@ P2(1,1:9) = [1 0 0 0 1 0 0 0 (1*pi/180)^2];
 AF(1) = 0;
 
 syms x y t dSr dSl b
-% define the function
+% Function for the next state variables
 f = [x + (dSr+dSl)/2*cos(t+(dSr-dSl)/(2*b));y + (dSr+dSl)/2*sin(t+(dSr-dSl)/(2*b)); t+(dSr-dSl)/b] % (5.7)
-% Calculate the jacobian with respect to STATE
+% Calculate the jacobian with respect to state, distance traveled with left and right wheel and wheelbase
 v1 = [x y t]
-% claculate the Jacobian R = jacobian(f, v)
-Rs = jacobian(f, v1) 
-% Calculate the jacobian with respect to MEASUREMENT
 v2 = [dSr dSl]
-% claculate the Jacobian R = jacobian(f, v)
-Rm = jacobian(f, v2)
 v3 = b;
+Rs = jacobian(f, v1) 
+Rm = jacobian(f, v2)
 Rb = jacobian(f, v3);
 
 % Variance of Direction and Angle
@@ -141,6 +138,7 @@ sigma2_dA = (SIGMAl+SIGMAr)/WHEEL_BASE^2; % [degrees]
 
 % Run until no more encoder values are available
 disp('Calculating ...');
+
 for kk=2:N,
     
     % Change of wheel displacements, i.e displacement of left and right
@@ -152,26 +150,16 @@ for kk=2:N,
     dD = (dDr + dDl)/2;
     dA = (dDr - dDl)/WHEEL_BASE; 
     
-    % Adjustment factor
-    if(dA == 0)
-        AF(kk) = 1;
-    else
-        AF(kk) = (sin(dA/2))/(dA/2);     
-    end 
-    
-    % Calculate the change in X and Y (World co-ordinates)
-    dX = AF(kk)*dD*cos(A2(kk-1)+ dA/2);
-    dY = AF(kk)*dD*sin(A2(kk-1)+dA/2);
-    
     % Predict the new state variables (World co-ordinates)
-    X2(kk) = X2(kk-1) + dX;
-    Y2(kk) = Y2(kk-1) + dY;
-    A2(kk) = mod(A2(kk-1) + dA, 2*pi);
+    Xn = eval(subs(f,[x, y, t, dSr, dSl, b],[X(kk-1), Y(kk-1), A(kk-1), dDr, dDl, WHEEL_BASE]));
+    X2(kk) = Xn(1);
+    Y2(kk) = Xn(2);
+    A2(kk) = Xn(3);
     
-    % Predict the new uncertainty in the state variables (Error prediction)
-    Js = eval(subs(Rs,[t,dSr,dSl,b],[dA, dDr, dDl, WHEEL_BASE]));
-    Jm = eval(subs(Rm,[t,dSr,dSl,b],[dA, dDr, dDl, WHEEL_BASE]));
-    Jb = eval(subs(Rb,[t,dSr,dSl,b],[dA, dDr, dDl, WHEEL_BASE]));
+    % Jacobians for state variables and measurement variables
+    Js = eval(subs(Rs,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
+    Jm = eval(subs(Rm,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
+    Jb = eval(subs(Rb,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
     
     % Old state uncertainty and measurement uncertainty
     Sx = [P2(kk-1,1:3);P2(kk-1,4:6);P2(kk-1,7:9)];   % Uncertainty in state variables at time k-1 [3x3]
