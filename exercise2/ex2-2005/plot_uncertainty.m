@@ -12,9 +12,9 @@
 %		dim1 == 1, dim2 == 3: First and Third Rows  (X-R)	    assuming C == |XY Y2 YR|
 %		dim1 == 2, dim2 == 3: Second and Third Rows (Y-R)					  |XR YR R2|
 %
-function plot_uncertainty(X, C, dim1, dim2)
+function plot_uncertainty(X, C, dim1, dim2, colour)
     [x1 x2] = mahal_ellipse(C, dim1, dim2, 1, 10);
     
     hold on;
-        plot(x1 + X(1,1), x2 + X(2,1), 'k');
+        plot(x1 + X(1,1), x2 + X(2,1), colour);
     hold off;
