@@ -25,6 +25,8 @@ P(1,1:9) = [1 0 0 0 1 0 0 0 (1*pi/180)^2];
 SIGMAV = var(v);
 SIGMAa = var(a);
 SIGMAT = 0.00001;
+SIGMAdD = SIGMAV*cos(SIGMAa)*SIGMAT;
+SIGMAA = (SIGMAV*sin(SIGMAa)*SIGMAT)/L
 
 %% Computation
 for kk=2:N,
@@ -77,7 +79,19 @@ for kk=2:N,
     all_dX(kk) = dX;
     all_dY(kk) = dY;
     
+    %Ill try some shit here
+    all_stdX(kk) = std(X);
+    all_stdY(kk) = std(Y);
+    all_stdA(kk) = std(A);
+    
+    
+    
 end;
+
+%Wierd stuff
+stdX = std(X);
+stdY = std(Y);
+stdA = std(A);
 
 %% Section 2 Plot
 % Plot the path taken by the robot, by plotting the uncertainty in the current position
@@ -143,25 +157,13 @@ hold off;
     figure, subplot(3,1,1);
     plot(Es(:,1), 'r')
     hold;
-    plot(eEs(:,1), 'g')
-    title('X error')
-    legend('True error', 'Estimated error')
-    xlabel('Sample')
-    ylabel('Distance [mm]')
+    plot(eEs(:,1) )
     subplot(3,1,2);
-    plot(Es(:,2), 'r');
+    plot(Es(:,2));
     hold;
-    plot(eEs(:,2), 'g')
-    title('Y error')
-    legend('True error', 'Estimated error')
-    xlabel('Sample')
-    ylabel('Distance [mm]')
+    plot(eEs(:,2))
     subplot(3,1,3);
-    plot(Es(:,3), 'r');
+    plot(Es(:,3));
     hold;
-    plot(eEs(:,3), 'g')
-    title('A error')
-    legend('True error', 'Estimated error')
-    xlabel('Sample')
-    ylabel('°')
+    plot(eEs(:,3))
     

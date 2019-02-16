@@ -19,10 +19,8 @@ SIGMA_WHEEL_ENCODER = 0.5/12;   % The error in the encoder is 0.5mm / 12mm trave
 SIGMAl = SIGMA_WHEEL_ENCODER;
 SIGMAr = SIGMA_WHEEL_ENCODER;
 
-
 % Load encoder values
-ENC = load('khepera_circle.txt');
-
+ENC = load('khepera.txt');
 
 % Transform encoder values (pulses) into distance travelled by the wheels (mm)
 Dr = ENC(1:1:end,2) * MM_PER_PULSE;
@@ -62,7 +60,6 @@ for kk=2:N,
     dX = AF(kk)*dD*cos(A(kk-1)+ dA/2);
     dY = AF(kk)*dD*sin(A(kk-1)+dA/2);
     
-    
     % Predict the new state variables (World co-ordinates)
     X(kk) = X(kk-1) + dX;
     Y(kk) = Y(kk-1) + dY;
@@ -91,22 +88,22 @@ for kk=2:N,
 end
 
 % Khepera settings 2
-WHEEL_BASE = 53;                % [mm]
-WHEEL_DIAMETER = 15.3;          % [mm]
+WHEEL_BASE = 45;                % [mm]
+WHEEL_DIAMETER = 14;          % [mm]
 WHEEL_CIRCUMFERENCE = pi*WHEEL_DIAMETER;    % [mm]
 MM_PER_PULSE = WHEEL_CIRCUMFERENCE/PULSES_PER_REVOLUTION; % [mm / pulse]
 
 % %%% Uncertainty settings, which are be the same for the left and right encoders
 SIGMA_WHEEL_ENCODER = 0.5/12;   % The error in the encoder is 0.5mm / 12mm travelled
-SIGMA_WHEEL_BASE = 13; % The error in wheelbase is 13mm
+SIGMA_WHEEL_BASE = 4; % The error in wheelbase is 13mm
 
 % Use the same uncertainty in both of the wheel encoders
-kl = 0.001   % The error on each wheel
-kr = 0.001
+kl = 1.3*pi/WHEEL_CIRCUMFERENCE   % The error on each wheel
+kr = 1.3*pi/WHEEL_CIRCUMFERENCE
 kb = SIGMA_WHEEL_BASE;
 
 % Load encoder values
-ENC = load('khepera_circle.txt');
+ENC = load('khepera.txt');
 
 
 % Transform encoder values (pulses) into distance travelled by the wheels (mm)
@@ -157,9 +154,19 @@ for kk=2:N,
     A2(kk) = Xn(3);
     
     % Jacobians for state variables and measurement variables
-    Js = eval(subs(Rs,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
-    Jm = eval(subs(Rm,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
-    Jb = eval(subs(Rb,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
+    %Js = eval(subs(Rs,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
+    %Jm = eval(subs(Rm,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
+    %Jb = eval(subs(Rb,[t,dSr,dSl,b],[A(kk-1), dDr, dDl, WHEEL_BASE]));
+    
+    Js = [ 1, 0, -sin(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl/2 + dDr/2)
+          0, 1,  cos(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl/2 + dDr/2)
+          0, 0,                                           1];
+    Jm = [ cos(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))/2 - (sin(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl/2 + dDr/2))/(2*WHEEL_BASE), cos(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))/2 + (sin(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl/2 + dDr/2))/(2*WHEEL_BASE)
+          sin(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))/2 + (cos(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl/2 + dDr/2))/(2*WHEEL_BASE), sin(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))/2 - (cos(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl/2 + dDr/2))/(2*WHEEL_BASE)
+                                                                                        1/WHEEL_BASE,                                                                              -1/WHEEL_BASE];
+    Jb =  [-(sin(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl - dDr)*(dDl/2 + dDr/2))/(2*WHEEL_BASE^2);
+            (cos(A(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl - dDr)*(dDl/2 + dDr/2))/(2*WHEEL_BASE^2);
+                                                   (dDl - dDr)/WHEEL_BASE^2]
     
     % Old state uncertainty and measurement uncertainty
     Sx = [P2(kk-1,1:3);P2(kk-1,4:6);P2(kk-1,7:9)];   % Uncertainty in state variables at time k-1 [3x3]
@@ -175,7 +182,6 @@ for kk=2:N,
     all_dA(kk) = dA;
     all_dD(kk) = dD;
 end
-
 
 figure, plot(all_dA, 'DisplayName', '\delta\theta');
 hold;
@@ -208,13 +214,13 @@ figure;
     xlabel('X [mm] World co-ordinates');
     ylabel('Y [mm] World co-ordinates');
     hold on;
-        for kk = 1:10:N,
+        for kk = 1:1:N,
             C = [P(kk,1:3);P(kk,4:6);P(kk,7:9)];
             C2 = [P2(kk,1:3);P2(kk,4:6);P2(kk,7:9)];
             plot_uncertainty([X(kk) Y(kk) A(kk)]', C, 1, 2, 'r');
             plot_uncertainty([X2(kk) Y2(kk) A2(kk)]', C2, 1, 2, 'g');
         end;
-        legend("Excluding wheelbase and diameter uncertaintuy", "Including wheelbase and diameter uncertainty")
+        legend("With measurement uncertainty", "With uncertainty in wheelbase and wheel diameter")
     hold off;
     axis('equal');
 
@@ -223,19 +229,19 @@ figure;
     subplot(3,1,1); plot(X, 'r'); title('X');
     hold;
     plot(X2, 'g');
-    legend("Excluding wheelbase and diameter uncertaintuy", "Including wheelbase and diameter uncertainty");
+    legend("With measurement uncertainty", "With uncertainty in wheelbase and wheel diameter");
     xlabel('Samples');
     ylabel('[mm]');
     subplot(3,1,2); plot(Y, 'r'); title('Y');
     hold;
     plot(Y2, 'g');
-    legend("Excluding wheelbase and diameter uncertaintuy", "Including wheelbase and diameter uncertainty");
+    legend("With measurement uncertainty", "With uncertainty in wheelbase and wheel diameter");
     xlabel('Samples');
     ylabel('[mm]');
     subplot(3,1,3); plot(A*180/pi, 'r'); title('A');
     hold;
     plot(A2*180/pi, 'g');
-    legend("Excluding wheelbase and diameter uncertaintuy", "Including wheelbase and diameter uncertainty");
+    legend("With measurement uncertainty", "With uncertainty in wheelbase and wheel diameter");
     xlabel('Samples');
     ylabel("Angle [°]");
 

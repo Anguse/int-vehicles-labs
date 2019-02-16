@@ -1,6 +1,20 @@
 4)
 State uncertainty becomes greater and greater. This is expected since we don't have anything to refer to other than odometry and dead reckoning.
 
+5)
+SIGMAb = 4[mm]
+kr = kl = 1.3*pi/WHEEL_CIRCUMFERENCE = 0.0929[mm]
+
+
+3.3)
+SIGMAv = 4400
+SIGMAa = 0.1
+SIGMAT = 0.00001;
+Around 32[m]
+202.5[s] + deviation
+
+
+
 Axya = [1, 0, -dD*sin(A2(kk-1)+dA/2);            % Jacobian matrix w.r.t. X, Y and A [3x3]
             0, 1, dD*cos(A2(kk-1)+dA/2);
             0, 0, 1];     
@@ -20,3 +34,4 @@ Axya = [1, 0, -dD*sin(A2(kk-1)+dA/2);            % Jacobian matrix w.r.t. X, Y a
     
     % Store the new co-variance matrix
     P2(kk,1:9) = [Cxya_new(1,1:3) Cxya_new(2,1:3) Cxya_new(3,1:3)];
+
