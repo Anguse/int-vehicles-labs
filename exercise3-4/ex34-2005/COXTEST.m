@@ -1,6 +1,6 @@
 %% Example Title
 % Summary of example objective
-
+clear all; close all;
 %% Section 1 Title
 % Description of first code block
 
@@ -49,18 +49,19 @@ LINES = [1 8;       % L01
      
 LINEMODEL = [REF(LINES(:,1),1:2) REF(LINES(:,2),1:2)];
 
-R = [0 -1;1 0]
+figure, hold on;
+rot = [0 -1;1 0] % 90 degree rotation matrix
 for kk = 1:size(LINEMODEL, 1),
-    L1 = [LINEMODEL(kk,1:2); LINEMODEL(kk,3:4)];
-    L2 = [LINEMODEL(kk,1), LINEMODEL(kk,1); LINEMODEL(kk,3), LINEMODEL(kk,3)];
-    V = R*(L1-L2);
-    V = [V(1,2) V(2,2)];
-    U = V/norm(V);
-    Z = [LINEMODEL(kk,1) LINEMODEL(kk,3)]
-    R(kk,1) = dot(U(1:2)',LINEMODEL(kk,1:2));
+    L1 = [LINEMODEL(kk,1:2); LINEMODEL(kk,3:4)]; % [X1, X2; Y1, Y2]
+    L2 = [LINEMODEL(kk,1), LINEMODEL(kk,1); LINEMODEL(kk,3), LINEMODEL(kk,3)]; % [X1, X1; Y1, Y1]
+    V = rot*(L1-L2);      % Rotate line 90 degrees and move it to origo (rot*[0,  X2-X1; 0, Y2-Y1])
+    U = V/norm(V);        % Normalize for unitvector
+    R(kk,1:2) = dot(U, L1);
+    line([U(1,:)], [U(2,:)])
 end;
+hold off;
 
-a = 1;
+
 
 %% Section 2 Title
 % Description of second code block

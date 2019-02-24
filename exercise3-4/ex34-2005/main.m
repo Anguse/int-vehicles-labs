@@ -97,14 +97,15 @@ for kk = 2:no_inputs,
         plot_threewheeled_laser([X(kk-1) Y(kk-1) A(kk-1)]', 100, 612, 2, CONTROL(kk-1,5), 150, 50, 680, alfa, beta, gamma, angs, meas, 1);
         
         % YOU SHOULD WRITE YOUR CODE HERE ....
-        % Call the function [dx dy da C] = Cox_LineFit(angs, meas, [X(kk-1) Y(kk-1)
-        % A(kk-1)]', LINEMODEL) => Position fix + Unceratinty of the
-        % position fix
         LINEMODEL = [REF(LINES(:,1),1:2) REF(LINES(:,2),1:2)];
-        [posfix, var] = Cox_LineFit(angs, meas, [X(kk-1) Y(kk-1) A(kk-1)]', LINEMODEL);
+        [dX dY dA C] = Cox_LineFit(angs, meas, [X(kk-1) Y(kk-1) A(kk-1)]', [alfa, beta, gamma]', LINEMODEL); % => Position fix + Unceratinty of the position fix
+        
         
         % ... AND HERE ...
         % Update the position, i.e. X(kk-1), Y(kk-1), A(kk-1) and C(kk-1)
+        %X(kk) = X(kk-1) + dX;
+        %Y(kk) = Y(kk-1) + dY;
+        %A(kk) = A(kk-1) + dA;
         
         % Next time use the next scan
         scan_idx = mod(scan_idx, max(size(LD_HEAD))) + 1;
@@ -128,6 +129,9 @@ for kk = 2:no_inputs,
     Y(kk) = Y(kk-1) + cos(a)*v*sin(A(kk-1))*T;
     A(kk) = A(kk-1) + sin(a)*v*T/L;
     
+    
+    
     % ALSO UPDATE THE UNCERTAINTY OF THE POSITION
     % ERROR = [X' Y' A'] - CONTROL(:,4:6);
+    
 end;
