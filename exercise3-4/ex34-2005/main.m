@@ -130,7 +130,6 @@ for kk = 2:no_inputs,
     A(kk) = A(kk-1) + sin(a)*v*T/L;
     
     
-    
     % ALSO UPDATE THE UNCERTAINTY OF THE POSITION
     % ERROR = [X' Y' A'] - CONTROL(:,4:6);
     
