@@ -40,7 +40,7 @@ while running
     index = 1;
     
     % 2.Find the target line for all data points
-    for kk = 1:size(v, 1) % Points
+    for kk = 1:size(angs, 2) % Points
         for ii = 1:size(LINEMODEL, 1)% Lines
             yi(ii) = R(ii,2) - dot(U(ii,:), v(kk,1:2));
         end
@@ -58,9 +58,8 @@ while running
         X2(kk) = U(vi(kk,3), 2);
         X3(kk) = U(vi(kk,3),:)*[0 -1;1 0]*(vi(kk,1:2)-mean(vi(:,1:2)))';
         A = [X1(kk) X2(kk) X3(kk)];
-        B = inv(A'*A)*A'*y(kk);
-        
-        S2 = ((y(kk)-A*B)*(y(kk)-A*B)')/(max(size(A))-4);
+        B = inv(A'*A)*A'*y
+        S2 = ((y-A*B)*(y-A*B)')/(max(size(A))-4);
         C = S2*(inv(A'*A));
         
         % 4.Add latest contribution to the overall congruence
@@ -70,14 +69,13 @@ while running
         ddx = ddx + dx;
         ddy = ddy + dy;
         dda = dda + da;
-        
-        sqrt(dx^2+dy^2+da^2)
-        
-        if(sqrt(dx^2+dy^2+da^2) < 5)&&(abs(da<0.1*pi/180))
-            running = false;
-        end
     end
     
-    
+    if(sqrt(dx^2+dy^2+da^2) < 5)&&(abs(da<0.1*pi/180))
+        break;
+        running = false;
+    else
+        continue;
+    end
 end
 

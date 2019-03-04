@@ -167,7 +167,7 @@ for kk=2:N,
                                                                                         1/WHEEL_BASE,                                                                              -1/WHEEL_BASE];
     Jb =  [-(sin(A2(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl - dDr)*(dDl/2 + dDr/2))/(2*WHEEL_BASE^2);
             (cos(A2(kk-1) - (dDl - dDr)/(2*WHEEL_BASE))*(dDl - dDr)*(dDl/2 + dDr/2))/(2*WHEEL_BASE^2);
-                                                   (dDl - dDr)/WHEEL_BASE^2]
+                                                   (dDl - dDr)/WHEEL_BASE^2]    
     
     % Old state uncertainty and measurement uncertainty
     Sx = [P2(kk-1,1:3);P2(kk-1,4:6);P2(kk-1,7:9)];   % Uncertainty in state variables at time k-1 [3x3]
