@@ -47,6 +47,7 @@ LINES = [1 8;       % L01
          22 18;     % L15
          20 23];    % L16
          
+ LINEMODEL = [REF(LINES(:,1),1:2) REF(LINES(:,2),1:2)];
 % Control inputs (velocity and steering angle)
 CONTROL = load('control_joy.txt');
 
@@ -98,7 +99,6 @@ for kk = 2:no_inputs,
         plot_threewheeled_laser([X(kk-1) Y(kk-1) A(kk-1)]', 100, 612, 2, CONTROL(kk-1,5), 150, 50, 680, alfa, beta, gamma, angs, meas, 1);
         
         % YOU SHOULD WRITE YOUR CODE HERE ....
-        LINEMODEL = [REF(LINES(:,1),1:2) REF(LINES(:,2),1:2)];
         [dX dY dA dC] = Cox_LineFit(angs, meas, [X(kk-1) Y(kk-1) A(kk-1)]', [alfa, beta, gamma]', LINEMODEL); % => Position fix + Unceratinty of the position fix
         
         
