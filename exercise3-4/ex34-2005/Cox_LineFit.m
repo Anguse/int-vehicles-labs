@@ -18,9 +18,10 @@ for kk = 1:size(LINEMODEL, 1)
           LINEMODEL(kk,3), LINEMODEL(kk,3)]; 
     V = rot*(L1-L2);       % rot*[0,  X2-X1; 0, Y2-Y1] Rotate line 90 degrees and move it to origo 
     Ui = V/norm(V)         % Normalize for unitvector
-    Ri = dot(Ui, L1);      % Project unitvector on L1
-    U(kk,1:2) = [Ui(3) Ui(4)];  %[Xu Yu]
-    R(kk,1:2) = Ri;
+    Ui = [Ui(3) Ui(4)]
+    Ri = dot(Ui, [L1(2) L1(4)]);      % Project unitvector on L1
+    U(kk,1:2) = Ui;  %[Xu Yu]
+    R(kk) = Ri;
 end;
 
 
@@ -42,11 +43,12 @@ while running
     % 2.Find the target line for all data points
     for kk = 1:size(v, 1) % Points
         for ii = 1:size(LINEMODEL, 1)% Lines
-            yi(ii) = R(ii,2) - dot(U(ii,:), v(kk,1:2));
+            yi(ii) = abs(R(ii) - dot(U(ii,:), v(kk,1:2)));
         end
         % Save target for data point
         [min_y(kk), y(kk)] = min(yi);    % [target distance, target index] 
-        if y.*y > median(y) % Reject all outliers
+        
+        if abs(min_y(kk)) < abs(median(min_y)) % Reject all outliers
             vi(index,1:3) = [v(kk,1:2) y(kk)]; % [vi1 vi2 targetindex]
             index = index+1;
         end
@@ -70,14 +72,10 @@ while running
         ddx = ddx + dx;
         ddy = ddy + dy;
         dda = dda + da;
-        
-        sqrt(dx^2+dy^2+da^2)
-        
+       
         if(sqrt(dx^2+dy^2+da^2) < 5)&&(abs(da<0.1*pi/180))
             running = false;
         end
     end
-    
-    
 end
 

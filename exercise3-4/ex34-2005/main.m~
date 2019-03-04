@@ -107,10 +107,7 @@ for kk = 2:no_inputs,
         X(kk-1) = X(kk-1) + dX;
         Y(kk-1) = Y(kk-1) + dY;
         A(kk-1) = A(kk-1) + dA;
-        %C(kk-1,1:3) = C(kk-1,1:3) + dC(1:3);
-        %C(kk-1,4:6) = C(kk-1,4:6) + dC(4:6);
-        %C(kk-1,6:9) = C(kk-1,6:9) + dC(6:9);
-        
+        C(kk-1,1:3) = C(kk-1,1.3) + [dC(1) dC(4) dC(7)];
         
         
         % Next time use the next scan
