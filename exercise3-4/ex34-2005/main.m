@@ -72,6 +72,9 @@ fig_env = figure;
 % Plot the line model
 figure(fig_env); plot_line_segments(REF, LINES, 1);
 
+SIGMAV = var(CONTROL(:,2));
+SIGMAa = var(CONTROL(:,3));
+SIGMAT = 0.00001;
 
 for kk = 2:no_inputs,
     % Check if we should get a position fix, i.e. if the time stamp of the
@@ -107,12 +110,10 @@ for kk = 2:no_inputs,
         X(kk-1) = X(kk-1) + dX;
         Y(kk-1) = Y(kk-1) + dY;
         A(kk-1) = A(kk-1) + dA;
-        %C(kk-1,1:3) = C(kk-1,1:3) + dC(1:3);
-        %C(kk-1,4:6) = C(kk-1,4:6) + dC(4:6);
-        %C(kk-1,6:9) = C(kk-1,6:9) + dC(6:9);
-        
-        
-        
+        C(kk-1,1:3) = dC(1,1:3);
+        C(kk-1,4:6) = dC(2,1:3);
+        C(kk-1,7:9) = dC(3,1:3);
+       
         % Next time use the next scan
         scan_idx = mod(scan_idx, max(size(LD_HEAD))) + 1;
     end;
@@ -130,13 +131,34 @@ for kk = 2:no_inputs,
     T = 0.050;
     L = 680;
 
+    dX = cos(a)*v*cos(A(kk-1))*T;
+    dY = cos(a)*v*sin(A(kk-1))*T;
+    dA = sin(a)*v*T/L;
     
-    X(kk) = X(kk-1) + cos(a)*v*cos(A(kk-1))*T;
-    Y(kk) = Y(kk-1) + cos(a)*v*sin(A(kk-1))*T;
-    A(kk) = A(kk-1) + sin(a)*v*T/L;
-    
+    X(kk) = X(kk-1) + dX;
+    Y(kk) = Y(kk-1) + dY;
+    A(kk) = A(kk-1) + dA;
     
     % ALSO UPDATE THE UNCERTAINTY OF THE POSITION
-    % ERROR = [X' Y' A'] - CONTROL(:,4:6);
+    ERROR = [dX dY dA] - CONTROL(:,4:6);
+     
+    % Old state uncertainty and measurement uncertainty
+    Sx = [C(kk-1,1:3);C(kk-1,4:6);C(kk-1,7:9)];   % Uncertainty in state variables at time k-1 [3x3]
+    Su = [SIGMAV 0 0;
+          0 SIGMAa 0;
+          0 0 SIGMAT];
+    % Jacobians for state variables and measurement variables
+    Js = [ 1, 0, -T*v*cos(a)*sin(A(kk-1) + (T*v*sin(a))/L);
+          0, 1,  T*v*cos(a)*cos(A(kk-1) + (T*v*sin(a))/L);
+          0, 0,                                        1];
+    % w.r.t [v,a,T]
+    Ju = [ T*cos(A(kk-1) + (T*v*sin(a))/L)*cos(a) - (T^2*v*sin(A(kk-1) + (T*v*sin(a))/L)*cos(a)*sin(a))/L, - T*v*cos(A(kk-1) + (T*v*sin(a))/L)*sin(a) - (T^2*v^2*sin(A(kk-1) + (T*v*sin(a))/L)*cos(a)^2)/L, v*cos(A(kk-1) + (T*v*sin(a))/L)*cos(a) - (T*v^2*sin(A(kk-1) + (T*v*sin(a))/L)*cos(a)*sin(a))/L
+          T*sin(A(kk-1) + (T*v*sin(a))/L)*cos(a) + (T^2*v*cos(A(kk-1) + (T*v*sin(a))/L)*cos(a)*sin(a))/L,   (T^2*v^2*cos(A(kk-1) + (T*v*sin(a))/L)*cos(a)^2)/L - T*v*sin(A(kk-1) + (T*v*sin(a))/L)*sin(a), v*sin(A(kk-1) + (T*v*sin(a))/L)*cos(a) + (T*v^2*cos(A(kk-1) + (T*v*sin(a))/L)*cos(a)*sin(a))/L
+                                                                                (T*sin(a))/L,                                                                      (T*v*cos(a))/L,                                                                       (v*sin(a))/L];
+                                                        
+    Sxn = Js*Sx*Js' + Ju*Su*Ju';
+    C(kk,1:3) = Sxn(1,1:3);
+    C(kk,4:6) = Sxn(2,1:3);
+    C(kk,7:9) = Sxn(3,1:3);
     
 end;
