@@ -26,6 +26,23 @@ for kk = 1:size(LINEMODEL, 1)
     R(kk,1) = Ri;
 end
 
+% Get meadian value of all target distances
+for ii = 1:size(angs, 2)
+    x = meas(kk)*cos(angs(kk));
+    y = meas(kk)*sin(angs(kk));
+    rot = [cos(gamma) -sin(gamma) alpha; sin(gamma) cos(gamma) beta; 0 0 1];
+    Xs = rot*[x y 1]';
+    rot = [cos(p_state(3)) -sin(p_state(3)) p_state(1); sin(p_state(3)) cos(p_state(3)) p_state(2); 0 0 1];
+    Xw = rot*[Xs(1) Xs(2) 1]';
+    v = [Xw(1), Xw(2)]';
+    for kk = 1:size(U, 1)
+        yy(kk) = abs(R(kk) - dot(U(kk,:), v))
+    end
+    [targ(ii), targind] = min(yy)
+end
+target_med = median(targ);
+threshold = target_med;
+
 
 %for kj = 1:size(pU, 1)
 %    line(pU(kj,1:2), pU(kj,3:4));
@@ -51,7 +68,7 @@ while ~finished
             yi(ii) = abs(R(ii) - dot(U(ii,:), v));
         end
         [target, target_index] = min(yi);
-        if target < 10 % Reject all outliers
+        if target^2 < threshold % Reject all outliers
             X1(kk,1) = U(target_index, 1);
             X2(kk,1) = U(target_index, 2);
             X3(kk,1) = U(target_index, :)*[0 -1;1 0]*(v-vm);
@@ -59,12 +76,24 @@ while ~finished
         end
     end
     
+    targets = nonzeros(targets);
+    if size(targets,1) == 0
+        if threshold > 300
+            dx = 0
+            dy = 0
+            da = 0
+            C = [1 0 0;
+                 0 1 0;
+                 0 0 1]
+            return;
+        end
+        threshold = threshold + 1
+        continue;
+    end
     % 3.Set up linear equation system
     A = [X1 X2 X3];
     A = A(any(A,2),:) % Remove empty rows
-    targets = nonzeros(targets);
-    
-            
+
     B =  A\targets;%inv(A'*A)*A'*target;A\targets;
 
     S2 = ((targets-A*B)'*(targets-A*B))/(max(size(A))-4);
@@ -85,10 +114,11 @@ while ~finished
         finished = true;
         break;
     end
+   
     clear X1;
     clear X2;
     clear X3;
-    clear targets;
+    targets = 0;
 end
 
 dx

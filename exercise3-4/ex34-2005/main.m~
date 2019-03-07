@@ -63,9 +63,6 @@ LD_FLAGS  = load('laser_flags.txt');
 X(1) = CONTROL(1,4);
 Y(1) = CONTROL(1,5);
 A(1) = CONTROL(1,6);
-coX(1) = CONTROL(1,4);
-coY(1) = CONTROL(1,5);
-coA(1) = CONTROL(1,6);
 C(1,1:9) = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 scan_idx = 1;
@@ -95,9 +92,9 @@ for kk = 2:no_inputs,
         % Mark the position where the position fix is done - and the size
         % of the position fix to be found
         figure(fig_path);
-        hold on; plot(coX(kk-1), coY(kk-1), 'ro'); hold off;
+        hold on; plot(X(kk-1), Y(kk-1), 'ro'); hold off;
         hold on; plot(CONTROL(kk-1,4), CONTROL(kk-1,5), 'ro'); hold off;
-        hold on; plot([coX(kk-1) CONTROL(kk-1,4)], [coY(kk-1) CONTROL(kk-1,5)], 'r'); hold off;
+        hold on; plot([X(kk-1) CONTROL(kk-1,4)], [Y(kk-1) CONTROL(kk-1,5)], 'r'); hold off;
         
         % Get the position fix - Use data points that are ok, i.e. with
         % flags = 0
@@ -129,8 +126,6 @@ for kk = 2:no_inputs,
         scan_idx = mod(scan_idx, max(size(LD_HEAD))) + 1;
     end;
     
-    
-    
     % Mark the estimated (dead reckoning) position
     figure(fig_path);
     hold on; plot(X(kk-1), Y(kk-1), 'b.'); hold off;
@@ -152,10 +147,6 @@ for kk = 2:no_inputs,
     Y(kk) = Y(kk-1) + dY;
     A(kk) = A(kk-1) + dA;
     
-    coX(kk) = coX(kk-1) + dX;
-    coY(kk) = coY(kk-1) + dY;
-    coA(kk) = coA(kk-1) + dA;
-    
     % ALSO UPDATE THE UNCERTAINTY OF THE POSITION
     ERROR = [dX dY dA] - CONTROL(:,4:6);
      
@@ -164,7 +155,6 @@ for kk = 2:no_inputs,
     Su = [SIGMAV 0 0;
           0 SIGMAa 0;
           0 0 SIGMAT];
-    
     % Jacobians for state variables and measurement variables
     Js = [ 1, 0, -T*v*cos(a)*sin(A(kk-1) + (T*v*sin(a))/L);
           0, 1,  T*v*cos(a)*cos(A(kk-1) + (T*v*sin(a))/L);
@@ -179,24 +169,4 @@ for kk = 2:no_inputs,
     C(kk,4:6) = Sxn(2,1:3);
     C(kk,7:9) = Sxn(3,1:3);
     
-    
-    
 end;
-
-ERROR = [X' Y' A'] - CONTROL(:,4:6);
-ERROR(:,3) = AngDifference(A',CONTROL(:,6));
-ERROR = abs(ERROR);
-figure,
-subplot(3,1,1);
-plot(ERROR(:,1),'b'); hold;
-plot(sqrt(P(:,1)),'r'); % one sigma
-plot(ScanPosIndx,sqrt(P(ScanPosIndx,1)),'k.'); % one sigma
-title('Error X [mm] and uncertainty [std] (red)');
-subplot(3,1,2);
-plot(ERROR(:,2),'b'); hold;
-plot(sqrt(P(:,5)),'r'); % one sigma
-title('Error Y [mm] and uncertainty [std] (red)');
-subplot(3,1,3);
-plot(ERROR(:,3)*180/pi,'b'); hold;
-plot(sqrt(P(:,9))*180/pi,'r'); % one sigma
-title('Error A [degree] and uncertainty [std] (red)');
