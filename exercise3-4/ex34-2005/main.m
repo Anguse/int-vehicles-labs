@@ -76,6 +76,10 @@ SIGMAV = var(CONTROL(:,2));
 SIGMAa = var(CONTROL(:,3));
 SIGMAT = 0.00001;
 
+%SIGMAV = 18^2;
+%SIGMAa = 0.037^2;
+%SIGMAT = 0.025^2;
+
 for kk = 2:no_inputs,
     % Check if we should get a position fix, i.e. if the time stamp of the
     % next laser scan is the same as the time stamp of the control input
@@ -109,7 +113,7 @@ for kk = 2:no_inputs,
         % Update the position, i.e. X(kk-1), Y(kk-1), A(kk-1) and C(kk-1)
         X(kk-1) = X(kk-1) + dX;
         Y(kk-1) = Y(kk-1) + dY;
-        A(kk-1) = A(kk-1) + dA;
+        A(kk-1) = mod(A(kk-1) + dA, 2*pi);
         C(kk-1,1:3) = dC(1,1:3);
         C(kk-1,4:6) = dC(2,1:3);
         C(kk-1,7:9) = dC(3,1:3);

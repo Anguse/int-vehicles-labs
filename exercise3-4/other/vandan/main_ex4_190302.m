@@ -132,7 +132,7 @@ for kk = 2:no_inputs
         % Call the Cox algorithm
         figure(fig_Cox);
         cox_counter = cox_counter +1;
-        [dx, dy, da, C] = Cox_LineFit(angs, meas, [X(kk-1) Y(kk-1) A(kk-1)]', LINEMODEL, cox_counter, REF, LINES);
+        [dx, dy, da, C] = Cox_LineFit_v(angs, meas, [X(kk-1) Y(kk-1) A(kk-1)]', LINEMODEL, cox_counter, REF, LINES);
         %dx = 0; dy = 0; da = 0; C = [0 0 0; 0 0 0; 0 0 0];
          
         %% From Ex 3 with no Kalman filter

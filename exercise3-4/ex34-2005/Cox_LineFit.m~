@@ -55,6 +55,7 @@ while ~finished
             X1(kk,1) = U(target_index, 1);
             X2(kk,1) = U(target_index, 2);
             X3(kk,1) = U(target_index, :)*[0 -1;1 0]*(v-vm);
+            target_inds(kk) = target_index;
             targets(kk) = target;
         end
     end
@@ -62,10 +63,11 @@ while ~finished
     % 3.Set up linear equation system
     A = [X1 X2 X3];
     A = A(any(A,2),:) % Remove empty rows
+    target_inds = nonzeros(target_inds);
     targets = nonzeros(targets);
     
             
-    B =  A\targets;%inv(A'*A)*A'*target;A\targets;
+    B = A\targets; %inv(A'*A)*A'*target;%
 
     S2 = ((targets-A*B)'*(targets-A*B))/(max(size(A))-4);
     C = S2*(inv(A'*A));
@@ -89,6 +91,7 @@ while ~finished
     clear X2;
     clear X3;
     clear targets;
+    clear target_inds;
 end
 
 dx

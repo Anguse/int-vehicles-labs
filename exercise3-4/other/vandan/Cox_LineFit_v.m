@@ -127,13 +127,13 @@ function [dx, dy, da, C] = Cox_LineFit(angs, meas, posMatrix, LINEMODEL, cox_cou
 
         % Set up the linear equation system
         % First the parts of the matrix A
-        Xi1(:,1) = Vi(:,5);
+        Xi1(:,1) = Vi(:,5)
         Xi2(:,1) = Vi(:,6);
         for rr = 1:matrix_counter
             Xi3(rr,1) = [Vi(rr,5) Vi(rr,6)]*[0 -1; 1 0]*([Vi(rr,2) Vi(rr,3)]' - [mean(Xw(:,2)) mean(Xw(:,3))]');
         end
         % To find B = [dx dy da]'
-        Y = Vi(:,4);
+        Y = Vi(:,4)
         A = [Xi1 Xi2 Xi3];
         % To calculate B = inv(A'*A)*A'*Y
         B = A\Y;
@@ -173,8 +173,8 @@ function [dx, dy, da, C] = Cox_LineFit(angs, meas, posMatrix, LINEMODEL, cox_cou
         
         n = n + 1; % Update loop counter
     end
-    %% End of the loop
     
+    %% End of the loop
     % Plot to see the result
     plot(ViCopy(:,2), ViCopy(:,3), 'b*');
     hold on;
