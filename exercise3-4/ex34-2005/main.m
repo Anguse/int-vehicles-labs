@@ -71,10 +71,13 @@ C(1,1:9) = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 scan_idx = 1;
 fig_path = figure;
 fig_env = figure;
+fig_cox = figure;
 
 % To open the figures at different locations to the right
 movegui(fig_env,[-20,-20]);
 movegui(fig_path,[-20,30]);
+movegui(fig_cox, [0, -20]);
+
 
 % Plot the line model
 figure(fig_env); plot_line_segments(REF, LINES, 1);
@@ -113,9 +116,9 @@ for kk = 2:no_inputs,
         plot_threewheeled_laser([X(kk-1) Y(kk-1) A(kk-1)]', 100, 612, 2, CONTROL(kk-1,5), 150, 50, 680, alfa, beta, gamma, angs, meas, 1);
         
         % YOU SHOULD WRITE YOUR CODE HERE ....
+        figure(fig_cox); hold on;
         [dX dY dA dC] = Cox_LineFit(angs, meas, [X(kk-1) Y(kk-1) A(kk-1)]', [alfa, beta, gamma]', LINEMODEL); % => Position fix + Unceratinty of the position fix
-        
-        
+        hold off;
         % ... AND HERE ...
         % Update the position, i.e. X(kk-1), Y(kk-1), A(kk-1) and C(kk-1)
         coX(kk-1) = coX(kk-1) + dX;
@@ -129,11 +132,9 @@ for kk = 2:no_inputs,
         scan_idx = mod(scan_idx, max(size(LD_HEAD))) + 1;
     end;
     
-    
-    
     % Mark the estimated (dead reckoning) position
     figure(fig_path);
-    hold on; plot(X(kk-1), Y(kk-1), 'b.'); hold off;
+    hold on; plot(coX(kk-1), coY(kk-1), 'b.'); hold off;
     % Mark the true (from the LaserWay system) position
     hold on; plot(CONTROL(kk-1,4), CONTROL(kk-1,5), 'k.'); hold off;
     
@@ -178,8 +179,7 @@ for kk = 2:no_inputs,
     C(kk,1:3) = Sxn(1,1:3);
     C(kk,4:6) = Sxn(2,1:3);
     C(kk,7:9) = Sxn(3,1:3);
-    
-    
+
     
 end;
 
